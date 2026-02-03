@@ -175,7 +175,8 @@
       return (
         <div className={`bg-slate-800 p-5 rounded-2xl border transition-all duration-300 ${
           quantity > 0 ? 'border-yellow-500 ring-1 ring-yellow-500/20' : 'border-slate-700'
-        }`}>
+        }`}
+        >
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1 pr-2">
               <h4 className="text-xl font-display font-bold text-white leading-tight">{item.name}</h4>
@@ -185,11 +186,11 @@
           </div>
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-700/50">
             <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
-              {quantity > 0 ? 'Na Sacola' : ''}
-            </span>
-            <div className="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-700" role="group" aria-label={`Quantidade de ${item.name}`}>
+              {quantity > 0 ? 'Na Sacola' : ''
+            }</span>
+            <div className="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-700" role="group" aria-label={`Quantidade de ${item.name}`}> 
               <button aria-label={`Diminuir ${item.name}`} onClick={() => onUpdateQty(item, -1)} disabled={quantity === 0} className="w-10 h-10 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors flex items-center justify-center">
-                <i className="fas fa-minus" aria-hidden="true"></i>
+                <i className= "fas fa-minus" aria-hidden="true"></i>
               </button>
               <span className="w-8 text-center font-bold text-lg text-white">{quantity}</span>
               <button aria-label={`Adicionar ${item.name}`} onClick={() => onUpdateQty(item, 1)} className="w-10 h-10 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors flex items-center justify-center">
@@ -270,7 +271,7 @@
                       <h4 className="font-bold text-white leading-tight">{item.name}</h4>
                       <p className="text-xs text-slate-500">{formatPrice(item.price)}</p>
                     </div>
-                    <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700" role="group" aria-label={`Quantidade de ${item.name}`}>
+                    <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700" role="group" aria-label={`Quantidade de ${item.name}`}> 
                       <button aria-label={`Diminuir ${item.name}`} onClick={() => onUpdateQty(item, -1)} className="w-8 h-8 text-red-400 flex items-center justify-center"><i className="fas fa-minus text-xs" aria-hidden="true"></i></button>
                       <span className="w-8 text-center font-bold text-white text-sm">{item.quantity}</span>
                       <button aria-label={`Adicionar ${item.name}`} onClick={() => onUpdateQty(item, 1)} className="w-8 h-8 text-green-400 flex items-center justify-center"><i className="fas fa-plus text-xs" aria-hidden="true"></i></button>
@@ -412,25 +413,31 @@
           return;
         }
 
-        // Montar mensagem do WhatsApp
-        const formatPrice = (p) => p.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-        let text = `*Pedido — As Brutas*%0A%0A`;
-        cartItems.forEach(it => {
-          const line = `${it.quantity}x ${it.name} — ${formatPrice(it.price)}%0A`;
-          text += line;
-        });
-        text += `%0A*Subtotal:* ${formatPrice(subtotal)}%0A`;
-        text += `*Entrega:* ${formatPrice(DELIVERY_FEE)}%0A`;
-        text += `*Total:* ${formatPrice(subtotal + DELIVERY_FEE)}%0A%0A`;
-        text += `*Pagamento:* ${orderDetails.paymentMethod}%0A`;
-        text += `*Nome:* ${orderDetails.clientName}%0A`;
-        text += `*Endereço:* ${orderDetails.address}%0A%0A`;
-        text += `Envio via app`;
+        // Montar mensagem do WhatsApp no formato solicitado
+        const formatPriceForMessage = (p) => `R$ ${p.toFixed(2)}`;
+        const lines = [];
 
+        lines.push('*NOVO PEDIDO - AS BRUTAS*');
+        lines.push('');
+        lines.push(`*Cliente:* ${orderDetails.clientName}`);
+        lines.push(`*Endereço:* ${orderDetails.address}`);
+        lines.push(`*Pagamento:* ${orderDetails.paymentMethod}`);
+        lines.push('');
+        lines.push('*ITENS:*');
+
+        cartItems.forEach(it => {
+          lines.push(`• ${it.quantity}x ${it.name} (${formatPriceForMessage(it.price)})`);
+        });
+
+        lines.push('');
+        lines.push(`*Subtotal:* ${formatPriceForMessage(subtotal)}`);
+        lines.push(`*Taxa de Entrega:* ${formatPriceForMessage(DELIVERY_FEE)}`);
+        lines.push(`*TOTAL:* ${formatPriceForMessage(subtotal + DELIVERY_FEE)}`);
+
+        const text = lines.join('\n');
         const encoded = encodeURIComponent(text);
         const url = `https://wa.me/${PHONE_NUMBER}?text=${encoded}`;
 
-        // Abrir em nova aba
         window.open(url, '_blank');
       };
 
